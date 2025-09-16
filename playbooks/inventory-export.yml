@@ -2,7 +2,7 @@
 - name: Automate Satellite Inventory Export to Git
   hosts: localhost
   connection: local
-  gather_facts: false
+  gather_facts: true
   
   tasks:
     - name: Get url from environment
