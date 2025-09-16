@@ -7,8 +7,8 @@
   tasks:
     - name: Get url from environment
       ansible.builtin.set_fact:
-        url: "{{ lookup('ansible.builtin.env', 'url') }}"
-        
+        satellite_url: "{{ lookup('ansible.builtin.env', 'url') }}"
+
     - name: Retrieve host data from Satellite API
       ansible.builtin.uri:
         url: "{{ satellite_url }}"
