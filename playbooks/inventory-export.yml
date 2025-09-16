@@ -4,19 +4,12 @@
   connection: local
   gather_facts: false
   
-  vars:
-    # These variables are automatically populated from the
-    # "Satellite API Credential" in Ansible Automation Platform/Tower
-    satellite_url: "{{ satellite_api_credential_host }}"
-    satellite_user: "{{ satellite_api_credential_username }}"
-    satellite_api_key: "{{ satellite_api_credential_password }}" # Use password for API Key
-
   tasks:
     - name: Retrieve host data from Satellite API
       ansible.builtin.uri:
-        url: "{{ satellite_url }}/api/v2/hosts"
-        user: "{{ satellite_user }}"
-        password: "{{ satellite_api_key }}"
+        url: "{{ satellite_url }}"
+        user: "{{ satellite_username }}"
+        password: "{{ satellite_password }}"
         method: GET
         body_format: json
         validate_certs: false
@@ -33,7 +26,6 @@
       ansible.builtin.git:
         repo: 'https://github.com/your-org/your-repo.git'
         dest: '/path/to/your/git/repo'
-        # The path should be relative to the repo root
         path: inventory.json
         state: present
         msg: "Automated Satellite inventory update: {{ ansible_date_time.iso8601_basic }}"
