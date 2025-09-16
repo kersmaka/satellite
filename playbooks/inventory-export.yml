@@ -31,6 +31,12 @@
         status_code: 200
         return_content: true
       register: satellite_data
+
+    - name: Ensure destination directory exists
+      ansible.builtin.file:
+      path: /home/ansible_admin/github/satellite
+      state: directory
+      mode: '0755'  
       
     - name: Create formatted JSON inventory file
       ansible.builtin.copy:
