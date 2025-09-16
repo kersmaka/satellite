@@ -45,8 +45,8 @@
       
     - name: Stage, commit, and push inventory file
       ansible.builtin.git:
-        repo: 'https://github.com/your-org/your-repo.git'
-        dest: '/path/to/your/git/repo'
+        repo: 'git@github.com:kersmaka/satellite.git'
+        dest: '/home/ansible_admin/github/satellite/'
         path: inventory.json
         state: present
         msg: "Automated Satellite inventory update: {{ ansible_date_time.iso8601_basic }}"
