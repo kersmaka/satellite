@@ -5,53 +5,36 @@
   gather_facts: false
   
   vars:
-    satellite_url: "https://your-satellite.example.com"
-    satellite_user: "automation_user"
-    satellite_pass: "your_api_password"
-    git_repo_path: "/path/to/your/git/repo"
-    inventory_file: "{{ git_repo_path }}/inventory.json"
+    # These variables are automatically populated from the
+    # "Satellite API Credential" in Ansible Automation Platform/Tower
+    satellite_url: "{{ satellite_api_credential_host }}"
+    satellite_user: "{{ satellite_api_credential_username }}"
+    satellite_api_key: "{{ satellite_api_credential_password }}" # Use password for API Key
 
   tasks:
-    - name: Ensure Git repository exists and is up to date
-      ansible.builtin.git:
-        repo: 'https://github.com/your-org/your-repo.git'
-        dest: '{{ git_repo_path }}'
-        accept_hostkey: true
-        force: false
-        # Use SSH key for authentication, or specify a username/password
-        # key_file: /path/to/ssh/key
-        # username: "{{ git_user }}"
-        # password: "{{ git_pass }}"
-
     - name: Retrieve host data from Satellite API
       ansible.builtin.uri:
         url: "{{ satellite_url }}/api/v2/hosts"
         user: "{{ satellite_user }}"
-        password: "{{ satellite_pass }}"
+        password: "{{ satellite_api_key }}"
         method: GET
         body_format: json
         validate_certs: false
         status_code: 200
         return_content: true
       register: satellite_data
-
+      
     - name: Create formatted JSON inventory file
       ansible.builtin.copy:
         content: "{{ satellite_data.content | to_json(indent=2) }}"
-        dest: "{{ inventory_file }}"
+        dest: "/path/to/your/git/repo/inventory.json"
       
-    - name: Stage and commit inventory file
+    - name: Stage, commit, and push inventory file
       ansible.builtin.git:
-        repo: '{{ git_repo_path }}'
+        repo: 'https://github.com/your-org/your-repo.git'
+        dest: '/path/to/your/git/repo'
         # The path should be relative to the repo root
         path: inventory.json
         state: present
         msg: "Automated Satellite inventory update: {{ ansible_date_time.iso8601_basic }}"
-      # The git module stages and commits in one step when `state: present` is used with a path.
-
-    - name: Push changes to remote repository
-      ansible.builtin.git:
-        repo: '{{ git_repo_path }}'
-        version: HEAD
-        # The git module can also handle pushing
         push: true
