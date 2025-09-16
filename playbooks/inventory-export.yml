@@ -35,7 +35,7 @@
     - name: Create formatted JSON inventory file
       ansible.builtin.copy:
         content: "{{ satellite_data.content | to_json(indent=2) }}"
-        dest: "/path/to/your/git/repo/inventory.json"
+        dest: "/home/ansible_admin/github/satellite/inventory.json"
       
     - name: Stage, commit, and push inventory file
       ansible.builtin.git:
