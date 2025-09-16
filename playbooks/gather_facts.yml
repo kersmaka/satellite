@@ -1,0 +1,7 @@
+---
+- name: Print all available facts
+  hosts: "{{ target }}"
+  tasks:
+    - name: gather all facts 
+      ansible.builtin.debug:
+          var: ansible_facts
