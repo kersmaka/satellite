@@ -1,0 +1,72 @@
+name: Satellite Inventory Export
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # Run at 2 AM daily
+  workflow_dispatch: # Allow manual trigger from the UI
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          # This token is required to push changes
+          token: ${{ secrets.GITHUB_TOKEN }} 
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Export and commit Satellite inventory
+        env:
+          SATELLITE_URL: ${{ secrets.SATELLITE_URL }}
+          SATELLITE_USER: ${{ secrets.SATELLITE_USER }}
+          SATELLITE_PASS: ${{ secrets.SATELLITE_PASS }}
+        run: |
+          # --- This section represents the Python/Bash script logic ---
+          # Use a script to call the Satellite API and save the JSON
+          python3 << EOF
+          import os
+          import json
+          import requests
+          
+          url = os.environ['SATELLITE_URL']
+          user = os.environ['SATELLITE_USER']
+          password = os.environ['SATELLITE_PASS']
+          
+          # Handle API call with pagination
+          inventory = []
+          page = 1
+          while True:
+              response = requests.get(
+                  f"{url}/api/v2/hosts?page={page}&per_page=100",
+                  auth=(user, password),
+                  verify=False
+              )
+              data = response.json()
+              inventory.extend(data['results'])
+              
+              # Break the loop if there are no more pages
+              if len(data['results']) < 100:
+                  break
+              page += 1
+
+          # Save the data to a file
+          with open('inventory.json', 'w') as f:
+              json.dump(inventory, f, indent=2)
+          EOF
+
+          # --- Git operations ---
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git add inventory.json
+          git commit -m "Automated inventory update" || echo "No changes to commit"
+          git push
+
+This workflow automates the entire process, ensuring a consistent, auditable history of your inventory without any manual intervention. The use of secrets for credentials is a critical security practice to keep sensitive information out of your code.
