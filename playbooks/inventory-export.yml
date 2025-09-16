@@ -8,6 +8,17 @@
     - name: Get url from environment
       ansible.builtin.set_fact:
         satellite_url: "{{ lookup('ansible.builtin.env', 'url') }}"
+      no_log: true
+
+    - name: Get username from environment
+      ansible.builtin.set_fact:
+        satellite_username: "{{ lookup('ansible.builtin.env', 'user') }}"
+      no_log: true  
+
+    - name: Get password from environment
+      ansible.builtin.set_fact:
+        satellite_password: "{{ lookup('ansible.builtin.env', 'password') }}"
+      no_log: true
 
     - name: Retrieve host data from Satellite API
       ansible.builtin.uri:
