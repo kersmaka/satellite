@@ -104,7 +104,7 @@
         force: false
         recursive: true
         accept_hostkey: true  # Only works for new keys
-        key_file: "{{ ansible_ssh_private_key_file | default('~/.ssh/id_rsa') }}"
+        #key_file: "{{ ansible_ssh_private_key_file | default('~/.ssh/id_rsa') }}"
       become: true
       become_user: ansible_admin  
       become_method: su
