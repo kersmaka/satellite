@@ -78,6 +78,7 @@
       become_user: "{{ git_user }}"
       environment:
         HOME: "{{ git_home }}"
+        SSH_AUTH_SOCK: "{{ lookup('ansible.builtin.env', 'SSH_AUTH_SOCK') }}"
 
     - name: Create inventory.json file from Satellite data
       ansible.builtin.copy:
@@ -104,3 +105,4 @@
       become_user: "{{ git_user }}"
       environment:
         HOME: "{{ git_home }}"
+        SSH_AUTH_SOCK: "{{ lookup('ansible.builtin.env', 'SSH_AUTH_SOCK') }}"
