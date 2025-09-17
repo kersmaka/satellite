@@ -3,7 +3,12 @@
   hosts: localhost
   connection: local
   gather_facts: true
-  
+
+  vars:
+    git_user: ansible_admin
+    git_home: "/home/ansible_admin"
+    repo_path: "/home/ansible_admin/github/satellite"
+
   tasks:
     - name: Get url from environment
       ansible.builtin.set_fact:
@@ -32,43 +37,50 @@
         return_content: true
       register: satellite_data
 
-    - name: Ensure /home/root/.ssh directory exists
+    - name: Ensure .ssh directory exists
       ansible.builtin.file:
-        path: /home/root/.ssh
+        path: "{{ git_home }}/.ssh"
         state: directory
-        owner: root
-        group: root
-        mode: '0700'  
+        owner: "{{ git_user }}"
+        group: "{{ git_user }}"
+        mode: '0700'
 
-    - name: Ensure github.com host key is in known_hosts
+    - name: Add github.com to known_hosts
       ansible.builtin.known_hosts:
         name: github.com
         key: "{{ lookup('pipe', 'ssh-keyscan github.com') }}"
-        path: /home/{{ ansible_user }}/.ssh/known_hosts
+        path: "{{ git_home }}/.ssh/known_hosts"
         state: present
+        hash_host: false
 
-    - name: Ensure destination directory and repository exists
+    - name: Clone or update Git repository
       ansible.builtin.git:
         repo: 'git@github.com:kersmaka/satellite.git'
-        dest: '/home/ansible_admin/github/satellite/'
+        dest: "{{ repo_path }}"
         version: 'main'
         update: true
+        clone: true
         force: false
         recursive: true
-        bare: false
-        clone: true
-        single_branch: false
-        track_submodules: false
+        accept_hostkey: true  # Only works for new keys
+        key_file: "{{ git_home }}/.ssh/id_rsa"
+      become: true
+      become_user: "{{ git_user }}"
 
-    - name: Create formatted JSON inventory file
+    - name: Create inventory.json file from Satellite data
       ansible.builtin.copy:
         content: "{{ satellite_data.content | to_json(indent=2) }}"
-        dest: "/home/ansible_admin/github/satellite/inventory.json"
-      
-    - name: Stage, commit, and push inventory file
-      ansible.builtin.shell:
-        cmd: |
-          cd /home/ansible_admin/github/satellite/
-          git add inventory.json
-          git commit -m "Automated Satellite inventory update: {{ ansible_date_time.iso8601_basic }}"
-          git push
+        dest: "{{ repo_path }}/inventory.json"
+        owner: "{{ git_user }}"
+        group: "{{ git_user }}"
+        mode: '0644'
+
+    - name: Commit and push updated inventory file
+      ansible.builtin.shell: |
+        git add inventory.json
+        git commit -m "Automated Satellite inventory update: {{ ansible_date_time.iso8601 }}"
+        git push
+      args:
+        chdir: "{{ repo_path }}"
+      become: true
+      become_user: "{{ git_user }}"
