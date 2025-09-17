@@ -32,6 +32,12 @@
         return_content: true
       register: satellite_data
 
+    - name: Ensure github.com host key is in known_hosts
+      ansible.builtin.known_hosts:
+        name: github.com
+        state: present
+        key: "{{ lookup('ansible.builtin.dig', 'github.com') }}"  
+
     - name: Ensure destination directory and repository exists
       ansible.builtin.git:
         repo: 'git@github.com:kersmaka/satellite.git'
