@@ -8,7 +8,6 @@
     git_user: ansible_admin
     git_home: "/home/ansible_admin"
     repo_path: "/home/ansible_admin/github/satellite"
-    ssh_key_path: "/runner/artifacts/{{ lookup('env', 'JOB_ID') }}/ssh_key_data"
 
   tasks:
     - name: Get url from environment
@@ -74,7 +73,6 @@
         dest: "{{ repo_path }}"
         version: 'main'
         accept_hostkey: true
-        key_file: "{{ ssh_key_path }}"
       become: yes
       become_method: su
       become_user: "{{ git_user }}"
@@ -94,8 +92,8 @@
 
     - name: Commit and push updated inventory file
       ansible.builtin.shell: |
-        git config --global user.name "Ansible Automation"
-        git config --global user.email "automation@example.com"
+        git config user.name "Ansible Automation"
+        git config user.email "automation@example.com"
         git add inventory.json
         git commit -m "Automated Satellite inventory update: {{ ansible_date_time.iso8601 }}"
         git push
