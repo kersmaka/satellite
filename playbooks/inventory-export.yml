@@ -91,6 +91,22 @@
     - debug:
         var: ssh_key_file
 
+    - name: Debug environment variables
+      ansible.builtin.shell: env
+      register: env_vars
+      changed_when: false
+
+    - name: Check if private key file exists
+      ansible.builtin.stat:
+        path: "{{ ansible_ssh_private_key_file | default('/nonexistent') }}"
+      register: key_file_stat
+
+    - debug:
+      var: key_file_stat  
+
+    - debug:
+      var: env_vars.stdout_lines
+
     - debug:
         var: ansible_ssh_private_key_file             
 
