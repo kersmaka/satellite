@@ -18,7 +18,7 @@
     - name: Get username from environment
       ansible.builtin.set_fact:
         satellite_username: "{{ lookup('ansible.builtin.env', 'user') }}"
-      no_log: true  
+      no_log: true
 
     - name: Get password from environment
       ansible.builtin.set_fact:
@@ -36,13 +36,14 @@
         status_code: 200
         return_content: true
       register: satellite_data
+      ignore_errors: true
 
     - name: Ensure ansible_admin user exists
       ansible.builtin.user:
         name: ansible_admin
         home: /home/ansible_admin
         create_home: true
-        shell: /bin/bash  
+        shell: /bin/bash
 
     - name: Ensure .ssh directory exists
       ansible.builtin.file:
@@ -60,94 +61,14 @@
         state: present
         hash_host: false
 
-    - name: Debug current user
-      ansible.builtin.command: whoami
-      become: true
-      become_method: su
-      become_user: ansible_admin
-      register: whoami_result
-
-    - debug:
-        var: whoami_result.stdout   
-
-    - name: Debug environment for ansible_admin
-      ansible.builtin.command: env
-      become: true
-      become_user: ansible_admin
-      become_method: su
-      register: env_output
-
-    - debug:
-        var: env_output.stdout_lines
-
-    - name: Check SSH key file existence
-      ansible.builtin.stat:
-        path: "{{ git_home }}/.ssh/id_rsa"
-      become: true
-      become_user: ansible_admin
-      become_method: su
-      register: ssh_key_file
-
-    - debug:
-        var: ssh_key_file
-
-    - name: Debug environment variables
-      ansible.builtin.shell: env
-      register: env_vars
-      changed_when: false
-
-    - name: Check if private key file exists
-      ansible.builtin.stat:
-        path: "{{ ansible_ssh_private_key_file | default('/nonexistent') }}"
-      register: key_file_stat
-
-    - debug:
-        var: key_file_stat  
-
-    - debug:
-        var: env_vars.stdout_lines
-
-    - debug:
-        var: ansible_ssh_private_key_file   
-
-    - name: Set SSH key file path
-      ansible.builtin.set_fact:
-        ssh_key_path: "/runner/artifacts/{{ lookup('env', 'JOB_ID') }}/ssh_key_data"       
-
-    - name: Change ownership and permissions of the SSH key file
-      ansible.builtin.file:
-        path: "{{ ssh_key_path }}"
-        owner: ansible_admin
-        mode: '0600'           
-
-    - name: Add SSH private key to the agent
-      ansible.builtin.shell:
-        cmd: |
-          eval "$(ssh-agent -s)"
-          ssh-add "{{ ssh_key_path }}"
-      become: yes
-      become_method: su
-      become_user: ansible_admin  
-
     - name: Clone or update Git repository
       ansible.builtin.git:
         repo: 'git@github.com:kersmaka/satellite.git'
         dest: "{{ repo_path }}"
         version: 'main'
-        update: true
-        clone: true
-        force: false
-        recursive: true
-        accept_hostkey: true  # Only works for new keys
-        #key_file: "{{ ansible_ssh_private_key_file | default('~/.ssh/id_rsa') }}"
-        key_file: "{{ ssh_key_path }}"
-      become: true
-      become_user: ansible_admin  
-      become_method: su
-      environment:
-        HOME: "{{ git_home }}"
-        USER: "{{ git_user }}"
-        LOGNAME: "{{ git_user }}"
+        accept_hostkey: true
+      become: yes
+      become_user: "{{ git_user }}"
 
     - name: Create inventory.json file from Satellite data
       ansible.builtin.copy:
@@ -159,10 +80,12 @@
 
     - name: Commit and push updated inventory file
       ansible.builtin.shell: |
+        git config --global user.name "Ansible Automation"
+        git config --global user.email "automation@example.com"
         git add inventory.json
         git commit -m "Automated Satellite inventory update: {{ ansible_date_time.iso8601 }}"
         git push
       args:
         chdir: "{{ repo_path }}"
-      become: true
+      become: yes
       become_user: "{{ git_user }}"
