@@ -8,6 +8,7 @@
     git_user: ansible_admin
     git_home: "/home/ansible_admin"
     repo_path: "/home/ansible_admin/github/satellite"
+    ssh_key_path: "/runner/artifacts/{{ lookup('env', 'JOB_ID') }}/ssh_key_data"
 
   tasks:
     - name: Get url from environment
@@ -40,8 +41,8 @@
 
     - name: Ensure ansible_admin user exists
       ansible.builtin.user:
-        name: ansible_admin
-        home: /home/ansible_admin
+        name: "{{ git_user }}"
+        home: "{{ git_home }}"
         create_home: true
         shell: /bin/bash
 
@@ -52,6 +53,9 @@
         owner: "{{ git_user }}"
         group: "{{ git_user }}"
         mode: '0700'
+      become: yes
+      become_method: su
+      become_user: "{{ git_user }}"
 
     - name: Add github.com to known_hosts
       ansible.builtin.known_hosts:
@@ -60,6 +64,9 @@
         path: "{{ git_home }}/.ssh/known_hosts"
         state: present
         hash_host: false
+      become: yes
+      become_method: su
+      become_user: "{{ git_user }}"
 
     - name: Clone or update Git repository
       ansible.builtin.git:
@@ -67,9 +74,12 @@
         dest: "{{ repo_path }}"
         version: 'main'
         accept_hostkey: true
+        key_file: "{{ ssh_key_path }}"
       become: yes
       become_method: su
       become_user: "{{ git_user }}"
+      environment:
+        HOME: "{{ git_home }}"
 
     - name: Create inventory.json file from Satellite data
       ansible.builtin.copy:
@@ -78,6 +88,9 @@
         owner: "{{ git_user }}"
         group: "{{ git_user }}"
         mode: '0644'
+      become: yes
+      become_method: su
+      become_user: "{{ git_user }}"
 
     - name: Commit and push updated inventory file
       ansible.builtin.shell: |
@@ -91,3 +104,5 @@
       become: yes
       become_method: su
       become_user: "{{ git_user }}"
+      environment:
+        HOME: "{{ git_home }}"
