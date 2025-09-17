@@ -32,6 +32,14 @@
         return_content: true
       register: satellite_data
 
+    - name: Ensure /home/root/.ssh directory exists
+      ansible.builtin.file:
+        path: /home/root/.ssh
+        state: directory
+        owner: root
+        group: root
+        mode: '0700'  
+
     - name: Ensure github.com host key is in known_hosts
       ansible.builtin.known_hosts:
         name: github.com
