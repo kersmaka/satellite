@@ -37,6 +37,13 @@
         return_content: true
       register: satellite_data
 
+    - name: Ensure ansible_admin user exists
+      ansible.builtin.user:
+        name: ansible_admin
+        home: /home/ansible_admin
+        create_home: true
+        shell: /bin/bash  
+
     - name: Ensure .ssh directory exists
       ansible.builtin.file:
         path: "{{ git_home }}/.ssh"
