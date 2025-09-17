@@ -60,6 +60,15 @@
         state: present
         hash_host: false
 
+    - name: Debug current user
+      ansible.builtin.command: whoami
+      become: true
+      become_user: ansible_admin
+      register: whoami_result
+
+    - debug:
+        var: whoami_result.stdout    
+
     - name: Clone or update Git repository
       ansible.builtin.git:
         repo: 'git@github.com:kersmaka/satellite.git'
