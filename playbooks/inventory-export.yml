@@ -85,6 +85,10 @@
       become: true
       become_user: ansible_admin  
       become_method: su
+      environment:
+        HOME: "{{ git_home }}"
+        USER: "{{ git_user }}"
+        LOGNAME: "{{ git_user }}"
 
     - name: Create inventory.json file from Satellite data
       ansible.builtin.copy:
