@@ -108,7 +108,11 @@
         var: env_vars.stdout_lines
 
     - debug:
-        var: ansible_ssh_private_key_file             
+        var: ansible_ssh_private_key_file   
+
+    - name: Set SSH key file path
+      ansible.builtin.set_fact:
+        ssh_key_path: "/runner/artifacts/{{ lookup('env', 'JOB_ID') }}/ssh_key_data"              
 
     - name: Clone or update Git repository
       ansible.builtin.git:
@@ -121,6 +125,7 @@
         recursive: true
         accept_hostkey: true  # Only works for new keys
         #key_file: "{{ ansible_ssh_private_key_file | default('~/.ssh/id_rsa') }}"
+        key_file: "{{ ssh_key_path }}"
       become: true
       become_user: ansible_admin  
       become_method: su
