@@ -63,6 +63,7 @@
     - name: Debug current user
       ansible.builtin.command: whoami
       become: true
+      become_method: su
       become_user: ansible_admin
       register: whoami_result
 
