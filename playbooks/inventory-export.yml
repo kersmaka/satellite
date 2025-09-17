@@ -36,7 +36,7 @@
       ansible.builtin.known_hosts:
         name: github.com
         state: present
-        key: "{{ lookup('ansible.builtin.dig', 'github.com') }}"  
+        key: "{{ lookup('community.general.dig', 'github.com') }}"
 
     - name: Ensure destination directory and repository exists
       ansible.builtin.git:
