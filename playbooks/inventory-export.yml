@@ -32,22 +32,28 @@
         return_content: true
       register: satellite_data
 
-    - name: Ensure destination directory exists
-      ansible.builtin.file:
-        path: /home/ansible_admin/github/satellite
-        state: directory
-        mode: '0755'  
-      
+    - name: Ensure destination directory and repository exists
+      ansible.builtin.git:
+        repo: 'git@github.com:kersmaka/satellite.git'
+        dest: '/home/ansible_admin/github/satellite/'
+        version: 'main'
+        update: true
+        force: false
+        recursive: true
+        bare: false
+        clone: true
+        single_branch: false
+        track_submodules: false
+
     - name: Create formatted JSON inventory file
       ansible.builtin.copy:
         content: "{{ satellite_data.content | to_json(indent=2) }}"
         dest: "/home/ansible_admin/github/satellite/inventory.json"
       
     - name: Stage, commit, and push inventory file
-      ansible.builtin.git:
-        repo: 'git@github.com:kersmaka/satellite.git'
-        dest: '/home/ansible_admin/github/satellite/'
-        path: inventory.json
-        state: present
-        msg: "Automated Satellite inventory update: {{ ansible_date_time.iso8601_basic }}"
-        push: true
+      ansible.builtin.shell:
+        cmd: |
+          cd /home/ansible_admin/github/satellite/
+          git add inventory.json
+          git commit -m "Automated Satellite inventory update: {{ ansible_date_time.iso8601_basic }}"
+          git push
