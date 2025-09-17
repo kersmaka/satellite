@@ -68,6 +68,7 @@
         version: 'main'
         accept_hostkey: true
       become: yes
+      become_method: su
       become_user: "{{ git_user }}"
 
     - name: Create inventory.json file from Satellite data
@@ -88,4 +89,5 @@
       args:
         chdir: "{{ repo_path }}"
       become: yes
+      become_method: su
       become_user: "{{ git_user }}"
