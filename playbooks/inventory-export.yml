@@ -35,8 +35,9 @@
     - name: Ensure github.com host key is in known_hosts
       ansible.builtin.known_hosts:
         name: github.com
+        key: "{{ lookup('pipe', 'ssh-keyscan github.com') }}"
+        path: /home/{{ ansible_user }}/.ssh/known_hosts
         state: present
-        key: "{{ lookup('community.general.dig', 'github.com') }}"
 
     - name: Ensure destination directory and repository exists
       ansible.builtin.git:
