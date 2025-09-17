@@ -68,7 +68,17 @@
       register: whoami_result
 
     - debug:
-        var: whoami_result.stdout    
+        var: whoami_result.stdout   
+
+    - name: Debug environment for ansible_admin
+      ansible.builtin.command: env
+      become: true
+      become_user: ansible_admin
+      become_method: su
+      register: env_output
+
+    - debug:
+      var: env_output.stdout_lines     
 
     - name: Clone or update Git repository
       ansible.builtin.git:
