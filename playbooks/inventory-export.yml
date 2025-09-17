@@ -78,7 +78,7 @@
       register: env_output
 
     - debug:
-      var: env_output.stdout_lines     
+        var: env_output.stdout_lines     
 
     - name: Clone or update Git repository
       ansible.builtin.git:
