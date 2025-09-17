@@ -101,8 +101,7 @@
         force: false
         recursive: true
         accept_hostkey: true  # Only works for new keys
-        key_file: "{{ git_home }}/.ssh/id_rsa"
-        #ssh_opts: '-i {{ git_home }}/.ssh/id_rsa -o IdentitiesOnly=yes -o StrictHostKeyChecking=no'
+        key_file: "{{ ansible_ssh_private_key_file | default('~/.ssh/id_rsa') }}"
       become: true
       become_user: ansible_admin  
       become_method: su
