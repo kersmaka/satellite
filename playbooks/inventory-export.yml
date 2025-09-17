@@ -74,6 +74,7 @@
         #ssh_opts: '-i {{ git_home }}/.ssh/id_rsa -o IdentitiesOnly=yes -o StrictHostKeyChecking=no'
       become: true
       become_user: ansible_admin  
+      become_method: su
 
     - name: Create inventory.json file from Satellite data
       ansible.builtin.copy:
