@@ -72,6 +72,8 @@
         accept_hostkey: true  # Only works for new keys
         key_file: "{{ git_home }}/.ssh/id_rsa"
         ssh_opts: '-o IdentitiesOnly=yes -i {{ git_home }}/.ssh/id_rsa'
+      become: true
+      become_user: ansible_admin  
 
     - name: Create inventory.json file from Satellite data
       ansible.builtin.copy:
